@@ -1,4 +1,4 @@
-const { CREATE_SUCCESS } = require("../utils/consts");
+const { CREATE_SUCCESS, DELETE_SUCCESS } = require("../utils/consts");
 const ErrorHandler = require("../utils/error-handler");
 const ProblemService = require("./../services/problem-service.js");
 
@@ -6,9 +6,18 @@ const create = async (req, res, next) => {
   try {
     const { title, description, tag } = req.body;
     const { id } = req.user;
-    const { images } = req.files;
-    await ProblemService.create(title, description, id, tag, images);
-    res.json(CREATE_SUCCESS);
+    let images;
+    if (req.files) {
+      images = req.files.images;
+    }
+    const { id: problemId } = await ProblemService.create(
+      title,
+      description,
+      id,
+      tag,
+      images
+    );
+    res.json({ message: CREATE_SUCCESS, problemId });
   } catch (e) {
     next(e);
   }
@@ -28,7 +37,19 @@ const getAll = async (req, res, next) => {
     next(e);
   }
 };
+
+const deleteOne = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    await ProblemService.deleteOne(id);
+    res.json({ message: DELETE_SUCCESS });
+  } catch (e) {
+    next(e);
+  }
+};
 module.exports = {
   create,
   getAll,
+  deleteOne,
 };

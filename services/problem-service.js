@@ -1,7 +1,8 @@
 const { Op } = require("sequelize");
+const { NOT_FOUND } = require("../utils/consts");
+const ErrorHandler = require("../utils/error-handler");
 const { Problem, Picture } = require("./../models");
 
-const ErrorHandler = require("./../utils/error-handler.js");
 const PictureService = require("./../services/picture-service.js");
 
 const create = async (title, description, userId, tag, images) => {
@@ -69,7 +70,11 @@ const getAll = async ({ q, offset, limit, tag }) => {
   });
 };
 
+const deleteOne = async (id) => {
+  return await Problem.destroy({ where: { id } });
+};
 module.exports = {
   create,
   getAll,
+  deleteOne,
 };

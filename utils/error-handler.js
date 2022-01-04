@@ -12,7 +12,7 @@ class ErrorHandler extends Error {
   static UnauthorizedError = () => {
     return new ErrorHandler(401, UNAUTHORIZED);
   };
-  static ForbiddenError = () => {
+  static ForbiddenError = (message) => {
     return new ErrorHandler(403, message);
   };
 }

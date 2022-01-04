@@ -7,11 +7,12 @@ const {
   USER_ALREADY_EXISTS,
   USER_NOT_FOUND,
   WRONG_CREDENTIALS,
+  NOT_FOUND,
 } = require("../utils/consts");
-const { generateTokens } = require("../utils/tokens.js");
+const { generateTokens, validateRefreshToken } = require("../utils/tokens.js");
 const { sendActivationMail } = require("./mail-service.js");
 
-const signup = async (email, password, firstName, lastName, role) => {
+const signup = async (email, password, firstName, lastName, role = "ADMIN") => {
   const oldUser = await User.findOne({ where: { email } });
 
   if (oldUser) {
@@ -45,6 +46,27 @@ const activate = async (link) => {
   await user.save();
 };
 
+const refresh = async (refresh_token) => {
+  if (!refresh_token) {
+    throw ErrorHandler.UnauthorizedError();
+  }
+  const userData = validateRefreshToken(refresh_token);
+  if (!userData) {
+    throw ErrorHandler.UnauthorizedError();
+  }
+
+  const user = await User.findOne({ where: { id: userData.id } });
+  if (!user) {
+    throw ErrorHandler.BadRequest("user " + NOT_FOUND);
+  }
+  const tokens = generateTokens({
+    id: user.id,
+    email: user.email,
+    role: user.role,
+  });
+  return tokens;
+};
+
 const statuses = {
   active: async () => {
     return await User.findAll({ where: { isActivated: true } });
@@ -76,4 +98,5 @@ module.exports = {
   getAll,
   login,
   activate,
+  refresh,
 };
